@@ -19,6 +19,7 @@ namespace RoslynTestKit
 
         protected virtual IReadOnlyCollection<DiagnosticAnalyzer> CreateAdditionalAnalyzers() => null;
         
+
         protected void NoCodeFix(string markupCode, string diagnosticId)
         {
             var markup = new CodeMarkup(markupCode);
