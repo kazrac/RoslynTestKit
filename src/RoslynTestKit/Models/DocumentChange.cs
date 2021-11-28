@@ -8,19 +8,129 @@ namespace RoslynTestKit.Models
     {
         public static DocumentChange CreateUnchanged(
             string code,
-            string path = null,
-            string documentName = null,
-            string projectName = null)
+            string path = null)
         {
+            path ??= @"TestProject\TestDocument.cs";
+
+            var pathParts = path.Split('\\').ToList();
+
             return new DocumentChange(
-                projectName ?? "TestProject",
-                documentName ?? "TestDocument",
+                pathParts[0],
+                pathParts.Last(),
                 DocumentState.Unchanged,
                 code,
                 code,
                 path,
-                path?.Split('\\').ToList(),
+                pathParts
+                    .Skip(1)
+                    .Take(pathParts.Count - 2)
+                    .ToList(),
                 null
+            );
+        }
+
+        public static DocumentChange CreateNew(
+            string code,
+            string path = null)
+        {
+            path ??= @"TestProject\TestDocument.cs";
+
+            var pathParts = path.Split('\\').ToList();
+
+            return new DocumentChange(
+                pathParts[0],
+                pathParts.Last(),
+                DocumentState.New,
+                code,
+                code,
+                path,
+                pathParts
+                    .Skip(1)
+                    .Take(pathParts.Count - 2)
+                    .ToList(),
+                null
+            );
+        }
+
+        public static DocumentChange CreateTargetUnchanged(
+            string markup,
+            string path = null)
+        {
+            path ??= @"TestProject\TestDocument.cs";
+
+            var pathParts = path.Split('\\').ToList();
+
+
+            var locator = MarkupHelper.GetLocator(markup);
+            var code = markup.Replace("[|", "").Replace("|]", "");
+
+            return new DocumentChange(
+                pathParts[0],
+                pathParts.Last(),
+                DocumentState.Unchanged,
+                code,
+                code,
+                path,
+                pathParts
+                    .Skip(1)
+                    .Take(pathParts.Count - 2)
+                    .ToList(),
+                locator
+            );
+        }
+
+        public static DocumentChange CreateTargetDeleted(
+            string markup,
+            string path = null)
+        {
+            path ??= @"TestProject\TestDocument.cs";
+
+            var pathParts = path.Split('\\').ToList();
+
+
+            var locator = MarkupHelper.GetLocator(markup);
+            var code = markup.Replace("[|", "").Replace("|]", "");
+
+            return new DocumentChange(
+                pathParts[0],
+                pathParts.Last(),
+                DocumentState.Deleted,
+                code,
+                null,
+                path,
+                pathParts
+                    .Skip(1)
+                    .Take(pathParts.Count - 2)
+                    .ToList(),
+                locator
+            );
+        }
+
+        public static DocumentChange CreateTargetChange(
+            string markup,
+            string finalCode,
+            string path = null)
+        {
+            path ??= @"TestProject\TestDocument.cs";
+
+            var pathParts = path.Split('\\').ToList();
+
+
+            var locator = MarkupHelper.GetLocator(markup);
+            var code = markup.Replace("[|", "").Replace("|]", "");
+
+            return new DocumentChange(
+                pathParts[0],
+                pathParts.Last(),
+                DocumentState.Changed,
+                code,
+                finalCode,
+                path,
+                pathParts
+                    .Skip(1)
+                    .Take(pathParts.Count - 2)
+                    .ToList(),
+                locator
             );
         }
 
