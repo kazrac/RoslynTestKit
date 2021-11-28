@@ -37,7 +37,9 @@ namespace RoslynTestKit.Utils
                     .Projects
                     .First(x => x.Name == documentChange.ProjectName);
 
-                solution = project
+                if(documentChange.State != DocumentState.New)
+                {
+                    solution = project
                     .AddDocument(
                         documentChange.DocumentName,
                         documentChange.InitialCode,
@@ -46,6 +48,7 @@ namespace RoslynTestKit.Utils
                     )
                     .Project
                     .Solution;
+                }
             }
 
             var projectMetaReferences = new Dictionary<string, MetadataReference>();
