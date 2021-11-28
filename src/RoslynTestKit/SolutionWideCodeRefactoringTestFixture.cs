@@ -5,7 +5,6 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeRefactorings;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using RoslynTestKit.CodeActionLocators;
 using RoslynTestKit.Models;
@@ -27,9 +26,12 @@ namespace RoslynTestKit
                 projectSetups = new[] { new ProjectSetup("TestProject") };
             }
 
-            var document = GetTargetDocumentInSolution(
+            var document = MarkupHelper
+                .GetTargetDocumentInSolution(
                     documentChanges,
-                    projectSetups
+                    projectSetups,
+                    LanguageName,
+                    References
                 );
 
             var locator = documentChanges
@@ -63,127 +65,7 @@ namespace RoslynTestKit
                 );
         }
 
-        private Document GetTargetDocumentInSolution(
-            ICollection<DocumentChange> documentChanges,
-            ICollection<ProjectSetup> projectSetups)
-        {
-            var workspace = new AdhocWorkspace();
-            var solution = workspace
-                .AddSolution(SolutionInfo.Create(SolutionId.CreateNewId(), new VersionStamp()));
-
-            foreach (var projectName in projectSetups.Select(x => x.Name))
-            {
-                solution = solution
-                    .AddProject(projectName, projectName, LanguageName)
-                    .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-                    .AddMetadataReferences(References)
-                    .Solution;
-            }
-
-            foreach (var documentChange in documentChanges)
-            {
-                var project = solution
-                    .Projects
-                    .First(x => x.Name == documentChange.ProjectName);
-
-                solution = project
-                    .AddDocument(
-                        documentChange.DocumentName,
-                        documentChange.InitialCode,
-                        documentChange.Folders,
-                        documentChange.Path
-                    )
-                    .Project
-                    .Solution;
-            }
-
-            var projectMetaReferences = new Dictionary<string, MetadataReference>();
-
-            solution = FillMetaReferences(
-                solution,
-                projectSetups,
-                projectMetaReferences
-            );
-
-            var targetDocument = documentChanges
-                .First(x => x.IsTargetDocument);
-
-            return solution
-                .Projects
-                .First(x => x.Name == targetDocument.ProjectName)
-                .Documents
-                .First(x => x.FilePath == targetDocument.Path);
-        }
-
-        private Solution FillMetaReferences(
-            Solution solution, 
-            ICollection<ProjectSetup> projectSetups, 
-            Dictionary<string, MetadataReference> projectMetaReferences)
-        {
-            foreach (var projectSetup in projectSetups)
-            {
-                if (projectMetaReferences.ContainsKey(projectSetup.Name))
-                {
-                    continue;
-                }
-
-                solution = AddMetaReference(
-                    solution,
-                    projectSetup,
-                    projectSetups,
-                    projectMetaReferences
-                );
-            }
-
-            return null;
-        }
-
-        private Solution AddMetaReference(
-            Solution solution,
-            ProjectSetup projectSetup,
-            ICollection<ProjectSetup> projectSetups,
-            Dictionary<string, MetadataReference> projectMetaReferences)
-        {
-            if (projectMetaReferences.ContainsKey(projectSetup.Name))
-            {
-                return solution;
-            }
-
-            foreach (var projectName in projectSetup.ReferenceProjectNames)
-            {
-                if (!projectMetaReferences.ContainsKey(projectName))
-                {
-                    var dependentProjectSetup = projectSetups.First(x => x.Name == projectName);
-
-                    solution = AddMetaReference(
-                        solution,
-                        dependentProjectSetup,
-                        projectSetups,
-                        projectMetaReferences
-                    );
-                }
-
-                solution = solution
-                    .Projects
-                    .First(x => x.Name == projectSetup.Name)
-                    .AddMetadataReference(
-                        projectMetaReferences[projectName]
-                    )
-                    .Solution;
-            }
-
-            var metaReference = solution
-                ?.Projects
-                .First(x => x.Name == projectSetup.Name)
-                .GetCompilationAsync()
-                .Result
-                ?.ToMetadataReference();
-
-            projectMetaReferences
-                .Add(projectSetup.Name, metaReference);
-
-            return solution;
-        }
+ 
 
         protected void TestCodeRefactoring(string markupCode, string expected, int refactoringIndex = 0)
         {

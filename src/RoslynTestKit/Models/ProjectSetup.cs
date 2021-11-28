@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace RoslynTestKit.Models
 {
@@ -6,16 +7,16 @@ namespace RoslynTestKit.Models
     {
         public ProjectSetup(
             string name)
-            :this(name, new List<string>())
+            :this(name, new string[] {})
         {
         }
 
         public ProjectSetup(
             string name, 
-            IReadOnlyList<string> referenceProjectNames)
+            params string[] referenceProjectNames)
         {
             Name = name;
-            ReferenceProjectNames = referenceProjectNames;
+            ReferenceProjectNames = referenceProjectNames.ToList();
         }
 
         public string Name { get; }
