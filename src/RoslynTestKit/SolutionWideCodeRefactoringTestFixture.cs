@@ -66,23 +66,19 @@ namespace RoslynTestKit
         }
 
  
-
         protected void TestCodeRefactoring(string markupCode, string expected, int refactoringIndex = 0)
         {
             var document = MarkupHelper.GetDocumentFromMarkup(markupCode, LanguageName, References);
             var locator = MarkupHelper.GetLocator(markupCode);
             TestCodeRefactoring(document, expected, locator, new ByIndexCodeActionSelector(refactoringIndex));
         }
-
         protected virtual bool FailWhenInputContainsErrors => true;
-
         protected void TestCodeRefactoring(string sourceMarkupCode, string expected, string title)
         {
             var document = MarkupHelper.GetDocumentFromMarkup(sourceMarkupCode, LanguageName, References);
             var locator = MarkupHelper.GetLocator(sourceMarkupCode);
             TestCodeRefactoring(document, expected, locator, new ByTitleCodeActionSelector(title));
         }
-
         protected void TestCodeRefactoringAtLine(string code, string expected, int line, int refactoringIndex = 0)
         {
             var document = MarkupHelper.GetDocumentFromCode(code, LanguageName, References);
@@ -94,37 +90,25 @@ namespace RoslynTestKit
             var locator = LineLocator.FromDocument(document, line);
             TestCodeRefactoring(document, expected, locator, new ByIndexCodeActionSelector(refactoringIndex));
         }
-
         protected void TestCodeRefactoring(Document document, string expected, TextSpan span, int refactoringIndex = 0)
         {
             var locator = new TextSpanLocator(span);
             TestCodeRefactoring(document, expected, locator, new ByIndexCodeActionSelector(refactoringIndex));
-        }
-
         private void TestCodeRefactoring(Document document, string expected, IDiagnosticLocator locator, ICodeActionSelector codeActionSelector)
-        {
             if (FailWhenInputContainsErrors)
-            {
                 var errors = document.GetErrors();
                 if (errors.Count > 0)
-                {
                     throw RoslynTestKitException.UnexpectedErrorDiagnostic(errors);
                 }
             }
-
             var codeRefactorings = GetCodeRefactorings(document, locator);
             var selectedRefactoring = codeActionSelector.Find(codeRefactorings);
             
             if (selectedRefactoring is null)
             {
                 throw RoslynTestKitException.CodeRefactoringNotFound(codeActionSelector, codeRefactorings, locator);
-            }
-
             Verify.CodeAction(selectedRefactoring, document, expected);
-        }
-
         protected void TestNoCodeRefactoring(string markupCode)
-        {
             var document = MarkupHelper.GetDocumentFromMarkup(markupCode, LanguageName, References);
             var locator = MarkupHelper.GetLocator(markupCode);
             TestNoCodeRefactoring(document, locator);
@@ -135,7 +119,6 @@ namespace RoslynTestKit
             var locator = new TextSpanLocator(span);
             TestNoCodeRefactoring(document, locator);
         }
-
         private void TestNoCodeRefactoring(Document document, IDiagnosticLocator locator)
         {
             var codeRefactorings = GetCodeRefactorings(document, locator).ToImmutableArray();
@@ -144,7 +127,6 @@ namespace RoslynTestKit
                 throw RoslynTestKitException.UnexpectedCodeRefactorings(codeRefactorings);
             }
         }
-
         private ImmutableArray<CodeAction> GetCodeRefactorings(Document document, IDiagnosticLocator locator)
         {
             var builder = ImmutableArray.CreateBuilder<CodeAction>();
@@ -155,35 +137,7 @@ namespace RoslynTestKit
         }
     }
 }
-                    solution = AddMetaReference(
-                        solution,
-                        dependentProjectSetup,
-                        projectSetups,
-                        projectMetaReferences
-                    );
-                }
-
-                solution = solution
-                    .Projects
-                    .First(x => x.Name == projectSetup.Name)
-                    .AddMetadataReference(
-                        projectMetaReferences[projectName]
-                    )
-                    .Solution;
-            }
-
-            var metaReference = solution
-                ?.Projects
-                .First(x => x.Name == projectSetup.Name)
-                .GetCompilationAsync()
-                .Result
-                ?.ToMetadataReference();
-
-            projectMetaReferences
-                .Add(projectSetup.Name, metaReference);
-
-            return solution;
-        }
+ 
 
         protected void TestCodeRefactoring(string markupCode, string expected, int refactoringIndex = 0)
         {
