@@ -147,8 +147,8 @@ namespace RoslynTestKit.Models
             ProjectName = projectName;
             DocumentName = documentName;
             State = state;
-            InitialCode = initialCode;
-            FinalCode = finalCode;
+            InitialCode = initialCode ?? string.Empty;
+            FinalCode = finalCode ?? string.Empty;
             Path = path;
             Folders = folders;
             Locator = locator;

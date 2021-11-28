@@ -53,7 +53,11 @@ namespace RoslynTestKit
                     .Projects
                     .FirstOrDefault(x => x.Name == documentChange.ProjectName)
                     ?.Documents
-                    .FirstOrDefault(x => x.FilePath == documentChange.Path);
+                    .FirstOrDefault(
+                        x =>
+                            x.Name == documentChange.DocumentName
+                            && x.Folders.SequenceEqual(documentChange.Folders)
+                    );
 
                 var actualCode = correspondingDocument
                     ?.GetTextAsync(CancellationToken.None)
