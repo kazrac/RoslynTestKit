@@ -27,6 +27,7 @@ namespace RoslynTestKit.Utils
                 solution = solution
                     .AddProject(projectName, projectName, languageName)
                     .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+					.WithDefaultNamespace(projectName)
                     .AddMetadataReferences(CreateMetadataReferences(references))
                     .Solution;
             }
