@@ -9,7 +9,11 @@ namespace RoslynTestKit.Models
         public static DocumentChange CreateUnchanged(
             string code,
             string path = null)
-        {
+		{
+			code = code
+				.Replace("[|", "")
+				.Replace("|]", "");
+
             path ??= @"TestProject\TestDocument.cs";
 
             var pathParts = path.Split('\\').ToList();
