@@ -66,7 +66,79 @@ namespace RoslynTestKit
                 );
         }
 
-        private ImmutableArray<CodeAction> GetCodeRefactorings(Document document, IDiagnosticLocator locator)
+		protected void TestExpectedCodeActions(
+			ICollection<DocumentChange> documentChanges,
+			ICollection<ProjectSetup> projectSetups = null,
+			params string[] expectedCodeActionTitles)
+		{
+
+			if (projectSetups == null)
+			{
+				projectSetups = new[] { new ProjectSetup("TestProject") };
+			}
+
+			var document = MarkupHelper
+				.GetTargetDocumentInSolution(
+					documentChanges,
+					projectSetups,
+					LanguageName,
+					References
+				);
+
+			var locator = documentChanges
+				.First(x => x.IsTargetDocument)
+				.Locator;
+            
+			if (FailWhenInputContainsErrors)
+			{
+				var errors = document.GetErrors();
+				if (errors.Count > 0)
+				{
+					throw RoslynTestKitException.UnexpectedErrorDiagnostic(errors);
+				}
+			}
+
+			var codeRefactorings = GetCodeRefactorings(
+				document, 
+				locator
+			);
+
+			var titlesOfUnexpectedCodeRefactorings = codeRefactorings
+				.Select(x => x.Title)
+				.Except(expectedCodeActionTitles)
+				.ToList();
+
+			var titlesOfMissingCodeRefactorings = expectedCodeActionTitles
+				.Except(
+					codeRefactorings
+						.Select(
+							x => x.Title
+						)
+				)
+				.ToList();
+
+            if(titlesOfUnexpectedCodeRefactorings.Any())
+			{
+				throw RoslynTestKitException
+					.UnexpectedCodeRefactorings(
+						codeRefactorings
+							.Where(x => titlesOfUnexpectedCodeRefactorings.Contains(x.Title))
+							.ToImmutableArray()
+					);
+			}
+
+			if (titlesOfMissingCodeRefactorings.Any())
+			{
+				throw RoslynTestKitException
+					.CodeRefactoringNotFound(
+						codeRefactorings
+							.Where(x => titlesOfMissingCodeRefactorings.Contains(x.Title))
+							.ToImmutableArray()
+					);
+			}
+		}
+
+		private ImmutableArray<CodeAction> GetCodeRefactorings(Document document, IDiagnosticLocator locator)
         {
             var builder = ImmutableArray.CreateBuilder<CodeAction>();
             var context = new CodeRefactoringContext(document, locator.GetSpan(), a => builder.Add(a), CancellationToken.None);

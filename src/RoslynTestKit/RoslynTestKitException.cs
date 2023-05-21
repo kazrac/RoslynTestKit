@@ -66,12 +66,19 @@ namespace RoslynTestKit
             var refactoringDescriptions = GetActionsDescription(codeRefactorings, $" Found only {codeRefactorings.Length} CodeRefactorings: ");
             var message = $"Cannot find CodeRefactoring {codeActionSelector}  at {locator.Description()}.{refactoringDescriptions}";
             return new RoslynTestKitException(message);
-        }
+		}
 
-        public static RoslynTestKitException UnexpectedCodeRefactorings(ImmutableArray<CodeAction> codeRefactorings)
+		public static RoslynTestKitException CodeRefactoringNotFound(ImmutableArray<CodeAction> codeRefactorings)
+		{
+			var refactoringDescriptions = GetActionsDescription(codeRefactorings, $" Found only {codeRefactorings.Length} CodeRefactorings: ");
+			var message = $"Cannot find CodeRefactorings: {refactoringDescriptions}";
+			return new RoslynTestKitException(message);
+		}
+
+		public static RoslynTestKitException UnexpectedCodeRefactorings(ImmutableArray<CodeAction> codeRefactorings)
         {
             var refactoringDescriptions = GetActionsDescription(codeRefactorings);
-            return new RoslynTestKitException($"Found reported CodeRefactorings '{refactoringDescriptions}' in spite of the expectations ");
+            return new RoslynTestKitException($"Found unexpected CodeRefactorings: '{refactoringDescriptions}'");
         }
 
         private static string GetActionsDescription(ImmutableArray<CodeAction> codeFixes, string title = null)
