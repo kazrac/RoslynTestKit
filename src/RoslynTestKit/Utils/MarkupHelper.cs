@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.VisualBasic;
 using RoslynTestKit.Models;
@@ -19,7 +20,29 @@ namespace RoslynTestKit.Utils
              IReadOnlyCollection<MetadataReference> references)
         {
             var workspace = new AdhocWorkspace();
-            var solution = workspace
+
+            var options = workspace
+				.Options
+				.WithChangedOption(
+					FormattingOptions.UseTabs, 
+					LanguageNames.CSharp, 
+					true
+				);
+
+			options = options
+				.WithChangedOption(
+					FormattingOptions.TabSize, 
+					LanguageNames.CSharp, 4
+				);
+
+			workspace
+				.TryApplyChanges(
+					workspace
+						.CurrentSolution
+						.WithOptions(options)
+				);
+
+			var solution = workspace
                 .AddSolution(SolutionInfo.Create(SolutionId.CreateNewId(), new VersionStamp()));
 
             foreach (var projectName in projectSetups.Select(x => x.Name))
@@ -52,15 +75,12 @@ namespace RoslynTestKit.Utils
                 }
             }
 
-            var projectMetaReferences = new Dictionary<string, MetadataReference>();
+			solution = FillProjectReferences(
+				solution,
+				projectSetups
+			);
 
-            solution = FillMetaReferences(
-                solution,
-                projectSetups,
-                projectMetaReferences
-            );
-
-            var targetDocument = documentChanges
+			var targetDocument = documentChanges
                 .First(x => x.IsTargetDocument);
 
             return solution
@@ -70,75 +90,33 @@ namespace RoslynTestKit.Utils
                 .First(x => x.FilePath == targetDocument.Path);
         }
 
-        private static Solution FillMetaReferences(
-            Solution solution,
-            ICollection<ProjectSetup> projectSetups,
-            Dictionary<string, MetadataReference> projectMetaReferences)
-        {
-            foreach (var projectSetup in projectSetups)
-            {
-                if (projectMetaReferences.ContainsKey(projectSetup.Name))
-                {
-                    continue;
-                }
+		private static Solution FillProjectReferences(
+			Solution solution,
+			ICollection<ProjectSetup> projectSetups)
+		{
+			var backupSolution = solution;
 
-                solution = AddMetaReference(
-                    solution,
-                    projectSetup,
-                    projectSetups,
-                    projectMetaReferences
-                );
-            }
+			foreach (var projectSetup in projectSetups)
+			{
+				var project = solution
+					.Projects
+					.First(p => p.Name == projectSetup.Name);
 
-            return solution;
-        }
-
-        private static Solution AddMetaReference(
-            Solution solution,
-            ProjectSetup projectSetup,
-            ICollection<ProjectSetup> projectSetups,
-            Dictionary<string, MetadataReference> projectMetaReferences)
-        {
-            if (projectMetaReferences.ContainsKey(projectSetup.Name))
-            {
-                return solution;
-            }
-
-            foreach (var projectName in projectSetup.ReferenceProjectNames)
-            {
-                if (!projectMetaReferences.ContainsKey(projectName))
-                {
-                    var dependentProjectSetup = projectSetups.First(x => x.Name == projectName);
-
-                    solution = AddMetaReference(
-                        solution,
-                        dependentProjectSetup,
-                        projectSetups,
-                        projectMetaReferences
-                    );
-                }
-
-                solution = solution
-                    .Projects
-                    .First(x => x.Name == projectSetup.Name)
-                    .AddMetadataReference(
-                        projectMetaReferences[projectName]
-                    )
-                    .Solution;
-            }
-
-            var metaReference = solution
-                ?.Projects
-                .First(x => x.Name == projectSetup.Name)
-                .GetCompilationAsync()
-                .Result
-                ?.ToMetadataReference();
-
-            projectMetaReferences
-                .Add(projectSetup.Name, metaReference);
+				solution = project
+					.AddProjectReferences(
+						projectSetup
+							.ReferenceProjectNames
+							.Select(
+								x => new ProjectReference(
+									backupSolution.Projects.First(p => p.Name == x).Id
+								)
+							)
+					)
+					.Solution;
+			}
 
             return solution;
-        }
+		}
 
         public static Document GetDocumentFromMarkup(string markup, string languageName, IReadOnlyCollection<MetadataReference> references, string projectName = null, string documentName = null)
         {

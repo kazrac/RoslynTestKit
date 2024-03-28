@@ -98,7 +98,7 @@ namespace RoslynTestKit
         {
             var analyzers = ImmutableArray.Create(CreateAnalyzer());
             var compilation = document.Project.GetCompilationAsync(CancellationToken.None).Result;
-            var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers, cancellationToken: CancellationToken.None);
+            var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers);
             var discarded = compilation.GetDiagnostics(CancellationToken.None);
             var errorsInDocument = discarded.Where(x => x.Severity == DiagnosticSeverity.Error).ToArray();
             if (errorsInDocument.Length > 0 && ThrowsWhenInputDocumentContainsError)
