@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.VisualBasic;
 using RoslynTestKit.Models;
@@ -19,66 +18,13 @@ namespace RoslynTestKit.Utils
              string languageName,
              IReadOnlyCollection<MetadataReference> references)
         {
-            var workspace = new AdhocWorkspace();
-
-            var options = workspace
-				.Options
-				.WithChangedOption(
-					FormattingOptions.UseTabs, 
-					LanguageNames.CSharp, 
-					true
+			var solution = SolutionFactory
+				.Create(
+					documentChanges,
+					projectSetups,
+					languageName,
+					references
 				);
-
-			options = options
-				.WithChangedOption(
-					FormattingOptions.TabSize, 
-					LanguageNames.CSharp, 4
-				);
-
-			workspace
-				.TryApplyChanges(
-					workspace
-						.CurrentSolution
-						.WithOptions(options)
-				);
-
-			var solution = workspace
-                .AddSolution(SolutionInfo.Create(SolutionId.CreateNewId(), new VersionStamp()));
-
-            foreach (var projectName in projectSetups.Select(x => x.Name))
-            {
-                solution = solution
-                    .AddProject(projectName, projectName, languageName)
-                    .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-					.WithDefaultNamespace(projectName)
-                    .AddMetadataReferences(CreateMetadataReferences(references))
-                    .Solution;
-            }
-
-            foreach (var documentChange in documentChanges)
-            {
-                var project = solution
-                    .Projects
-                    .First(x => x.Name == documentChange.ProjectName);
-
-                if(documentChange.State != DocumentState.New)
-                {
-                    solution = project
-                    .AddDocument(
-                        documentChange.DocumentName,
-                        documentChange.InitialCode,
-                        documentChange.Folders,
-                        documentChange.Path
-                    )
-                    .Project
-                    .Solution;
-                }
-            }
-
-			solution = FillProjectReferences(
-				solution,
-				projectSetups
-			);
 
 			var targetDocument = documentChanges
                 .First(x => x.IsTargetDocument);
@@ -89,34 +35,6 @@ namespace RoslynTestKit.Utils
                 .Documents
                 .First(x => x.FilePath == targetDocument.Path);
         }
-
-		private static Solution FillProjectReferences(
-			Solution solution,
-			ICollection<ProjectSetup> projectSetups)
-		{
-			var backupSolution = solution;
-
-			foreach (var projectSetup in projectSetups)
-			{
-				var project = solution
-					.Projects
-					.First(p => p.Name == projectSetup.Name);
-
-				solution = project
-					.AddProjectReferences(
-						projectSetup
-							.ReferenceProjectNames
-							.Select(
-								x => new ProjectReference(
-									backupSolution.Projects.First(p => p.Name == x).Id
-								)
-							)
-					)
-					.Solution;
-			}
-
-            return solution;
-		}
 
         public static Document GetDocumentFromMarkup(string markup, string languageName, IReadOnlyCollection<MetadataReference> references, string projectName = null, string documentName = null)
         {
@@ -145,7 +63,7 @@ namespace RoslynTestKit.Utils
                 _ => throw new NotSupportedException($"Language {languageName} is not supported")
             };
 
-        private static ImmutableArray<MetadataReference> CreateMetadataReferences(IReadOnlyCollection<MetadataReference> references)
+        private static ImmutableArray<MetadataReference> CreateMetadataReferences(IReadOnlyCollection<MetadataReference>? references)
         {
             var immutableReferencesBuilder = ImmutableArray.CreateBuilder<MetadataReference>();
             if (references != null)
@@ -157,7 +75,7 @@ namespace RoslynTestKit.Utils
             immutableReferencesBuilder.Add(ReferenceSource.Linq);
             immutableReferencesBuilder.Add(ReferenceSource.LinqExpression);
 
-            if (ReferenceSource.Core.Display.EndsWith("mscorlib.dll") == false)
+            if (ReferenceSource.Core.Display?.EndsWith("mscorlib.dll") == false)
             {
                 foreach (var netStandardCoreLib in ReferenceSource.NetStandardBasicLibs.Value)
                 {

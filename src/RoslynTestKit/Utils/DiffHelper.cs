@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using ApprovalTests.Reporters;
+using DiffEngine;
 using DiffPlex;
 using DiffPlex.Chunkers;
 using DiffPlex.DiffBuilder;
@@ -106,8 +106,17 @@ namespace RoslynTestKit.Utils
                 File.WriteAllText(transformedPath, text);
                 var expectedPath = Path.Combine(tmpDir, $"{tempFileName}_expected.cs");
                 File.WriteAllText(expectedPath, expectedCode);
-                new DiffReporter().Report( transformedPath, expectedPath);
+                Report(transformedPath, expectedPath);
             }
         }
-    }
+
+		private static void Report(string transformedPath, string expectedPath)
+		{
+			var launch = DiffRunner.Launch(transformedPath, expectedPath);
+			if (launch == LaunchResult.NoDiffToolFound)
+			{
+				throw new Exception($"Could not find a diff tool for extension: {Path.GetExtension(expectedPath)}");
+			}
+		}
+	}
 }

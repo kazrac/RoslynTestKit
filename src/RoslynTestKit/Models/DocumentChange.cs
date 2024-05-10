@@ -6,6 +6,14 @@ namespace RoslynTestKit.Models
 {
 	public class DocumentChange
 	{
+		public static DocumentChange CreateUnchanged(CaseDocument caseDocument)
+		{
+			return CreateUnchanged(
+				caseDocument.Code,
+				caseDocument.Path
+			);
+		}
+
 		public static DocumentChange CreateUnchanged(
 			string code,
 			string path = null)
@@ -33,6 +41,14 @@ namespace RoslynTestKit.Models
 			);
 		}
 
+		public static DocumentChange CreateNew(CaseDocument caseDocument)
+		{
+			return CreateNew(
+				caseDocument.Code,
+				caseDocument.Path
+			);
+		}
+
 		public static DocumentChange CreateNew(
 			string code,
 			string path = null)
@@ -53,6 +69,14 @@ namespace RoslynTestKit.Models
 					.Take(pathParts.Count - 2)
 					.ToList(),
 				null
+			);
+		}
+
+		public static DocumentChange CreateTargetUnchanged(CaseDocument caseDocument)
+		{
+			return CreateTargetUnchanged(
+				caseDocument.Code,
+				caseDocument.Path
 			);
 		}
 
@@ -82,6 +106,15 @@ namespace RoslynTestKit.Models
 			);
 		}
 
+		public static DocumentChange CreateChanged(CaseDocument caseDocument)
+		{
+			return CreateChanged(
+				caseDocument.Code,
+				caseDocument.FinalCode,
+				caseDocument.Path
+			);
+		}
+
 		public static DocumentChange CreateChanged(
 			string markup,
 			string finalCode,
@@ -105,6 +138,14 @@ namespace RoslynTestKit.Models
 					.Take(pathParts.Count - 2)
 					.ToList(),
 				null
+			);
+		}
+
+		public static DocumentChange CreateTargetDeleted(CaseDocument caseDocument)
+		{
+			return CreateTargetDeleted(
+				caseDocument.Code,
+				caseDocument.Path
 			);
 		}
 
@@ -132,6 +173,15 @@ namespace RoslynTestKit.Models
 					.Take(pathParts.Count - 2)
 					.ToList(),
 				locator
+			);
+		}
+
+		public static DocumentChange CreateTargetChange(CaseDocument caseDocument)
+		{
+			return CreateTargetChange(
+				caseDocument.Code,
+				caseDocument.FinalCode,
+				caseDocument.Path
 			);
 		}
 
