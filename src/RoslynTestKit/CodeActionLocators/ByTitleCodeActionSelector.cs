@@ -14,7 +14,7 @@ namespace RoslynTestKit.CodeActionLocators
         }
 
 
-        public CodeAction Find(IReadOnlyList<CodeAction> actions)
+        public CodeAction? Find(IReadOnlyList<CodeAction> actions)
         {
             return actions.FirstOrDefault(x => x.Title == _title);
         }

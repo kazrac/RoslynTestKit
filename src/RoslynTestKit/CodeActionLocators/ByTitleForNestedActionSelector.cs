@@ -17,7 +17,7 @@ namespace RoslynTestKit.CodeActionLocators
             this.nestedActionSelector = new ByTitleCodeActionSelector(actionTitle);
         }
 
-        public CodeAction Find(IReadOnlyList<CodeAction> actions)
+        public CodeAction? Find(IReadOnlyList<CodeAction> actions)
         {
             if (groupSelector.Find(actions) is { } group && NestedCodeActionHelper.TryGetNestedAction(group) is {} nestedActions)
             {

@@ -12,20 +12,21 @@ namespace RoslynTestKit
         internal static readonly MetadataReference Core = FromType<int>();
         internal static readonly MetadataReference Linq = FromType(typeof(Enumerable));
         internal static readonly MetadataReference LinqExpression = FromType(typeof(System.Linq.Expressions.Expression));
-        private static readonly string[] _netCoreAssemblies;
-        public static readonly MetadataReference NetStandardCore;
+        private static readonly string[]? _netCoreAssemblies;
+        public static readonly MetadataReference? NetStandardCore = null;
 
         static ReferenceSource()
         {
-            var trustedPlatformAssemblies = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES");
-            if (trustedPlatformAssemblies != null)
+			if (AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") is string trustedPlatformAssemblies)
             {
-                _netCoreAssemblies = ((String) trustedPlatformAssemblies)?.Split(Path.PathSeparator);
-                NetStandardCore = MetadataReference.CreateFromFile(_netCoreAssemblies.FirstOrDefault(x => x.EndsWith("mscorlib.dll")));
-            }
-            else
-            {
-                NetStandardCore = null;
+                _netCoreAssemblies = trustedPlatformAssemblies.Split(Path.PathSeparator);
+
+				var mscorlibDllPath = _netCoreAssemblies?.FirstOrDefault(x => x.EndsWith("mscorlib.dll"));
+
+				if (mscorlibDllPath != null)
+				{
+					NetStandardCore = MetadataReference.CreateFromFile(mscorlibDllPath);
+				}
             }
         }
 
@@ -36,14 +37,14 @@ namespace RoslynTestKit
             {
                 yield return NetStandardCore;
 
-                var mscorlibFile = _netCoreAssemblies.FirstOrDefault(x => x.EndsWith("mscorlib.dll"));
+                var mscorlibFile = _netCoreAssemblies?.FirstOrDefault(x => x.EndsWith("mscorlib.dll"));
                 if (string.IsNullOrWhiteSpace(mscorlibFile) == false)
                 {
                     var referencedAssemblies = Assembly.LoadFile(mscorlibFile).GetReferencedAssemblies();
                     foreach (var referencedAssembly in referencedAssemblies)
                     {
                         
-                        var assemblyFile = _netCoreAssemblies.FirstOrDefault(x => x.EndsWith($"{referencedAssembly.Name}.dll"));
+                        var assemblyFile = _netCoreAssemblies?.FirstOrDefault(x => x.EndsWith($"{referencedAssembly.Name}.dll"));
                         if (string.IsNullOrWhiteSpace(assemblyFile) == false)
                         {
                             yield return MetadataReference.CreateFromFile(assemblyFile);

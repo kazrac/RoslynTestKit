@@ -17,7 +17,7 @@ namespace RoslynTestKit
     {
         protected abstract CodeFixProvider CreateProvider();
 
-        protected virtual IReadOnlyCollection<DiagnosticAnalyzer> CreateAdditionalAnalyzers() => null;
+        protected virtual IReadOnlyCollection<DiagnosticAnalyzer>? CreateAdditionalAnalyzers() => null;
 
         public void NoCodeFix(string markupCode, string diagnosticId)
         {
@@ -150,7 +150,7 @@ namespace RoslynTestKit
         private IEnumerable<Diagnostic> GetReportedDiagnostics(Document document, IDiagnosticLocator locator)
         {
             var allReportedDiagnostics = GetAllReportedDiagnostics(document);
-            foreach (var diagnostic in allReportedDiagnostics)
+            foreach (var diagnostic in allReportedDiagnostics ?? Array.Empty<Diagnostic>())
             {
                 if (locator.Match(diagnostic.Location))
                 {
@@ -164,7 +164,7 @@ namespace RoslynTestKit
             
         }
 
-        private IEnumerable<Diagnostic> GetAllReportedDiagnostics(Document document)
+        private IEnumerable<Diagnostic>? GetAllReportedDiagnostics(Document document)
         {
             var additionalAnalyzers = CreateAdditionalAnalyzers();
             if (additionalAnalyzers != null)
@@ -173,12 +173,12 @@ namespace RoslynTestKit
 
                 var compilation = document.Project.GetCompilationAsync().GetAwaiter().GetResult();
                 return compilation
-                    .WithAnalyzers(additionalAnalyzers.ToImmutableArray(), new AnalyzerOptions(this.AdditionalFiles?.ToImmutableArray() ?? ImmutableArray<AdditionalText>.Empty))
+                    ?.WithAnalyzers(additionalAnalyzers.ToImmutableArray(), new AnalyzerOptions(this.AdditionalFiles?.ToImmutableArray() ?? ImmutableArray<AdditionalText>.Empty))
                     .GetAnalyzerDiagnosticsAsync().GetAwaiter().GetResult()
                     .Where(x=>x.Location.SourceTree == documentTree);
             }
 
-            return document.GetSemanticModelAsync().GetAwaiter().GetResult().GetDiagnostics();
+            return document.GetSemanticModelAsync().GetAwaiter().GetResult()?.GetDiagnostics();
         }
 
         private ImmutableArray<CodeAction> GetCodeFixes(Document document, Diagnostic diagnostic)
@@ -200,7 +200,7 @@ namespace RoslynTestKit
             }
 
             var tree = document.GetSyntaxTreeAsync(CancellationToken.None).Result;
-            return Diagnostic.Create(descriptor, Location.Create(tree, locator.GetSpan()));
+            return Diagnostic.Create(descriptor, Location.Create(tree!, locator.GetSpan()));
         }
     }
 }

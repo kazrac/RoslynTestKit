@@ -7,20 +7,41 @@ namespace RoslynTestKit.Models
     {
         public ProjectSetup(
             string name)
-            :this(name, new string[] {})
+            :this(name, false, new string[] {})
         {
         }
 
         public ProjectSetup(
             string name, 
             params string[] referenceProjectNames)
+			: this(name, false, referenceProjectNames)
         {
-            Name = name;
-            ReferenceProjectNames = referenceProjectNames.ToList();
-        }
+		}
 
-        public string Name { get; }
-        public IReadOnlyList<string> ReferenceProjectNames { get; }
+		public ProjectSetup(
+			string name,
+			bool isNullableEnabled)
+			: this(
+				name, 
+				isNullableEnabled, 
+				new string[] { }
+			)
+		{
+		}
+
+		public ProjectSetup(
+			string name,
+			bool isNullableEnabled,
+			params string[] referenceProjectNames)
+		{
+			Name = name;
+			IsNullableEnabled = isNullableEnabled;
+			ReferenceProjectNames = referenceProjectNames.ToList();
+		}
+
+		public string Name { get; }
+		public bool IsNullableEnabled { get; }
+		public IReadOnlyList<string> ReferenceProjectNames { get; }
 
     }
 }

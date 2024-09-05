@@ -61,10 +61,10 @@ namespace RoslynTestKit
             return new RoslynTestKitException(message);
         }
 
-        public static RoslynTestKitException CodeRefactoringNotFound(ICodeActionSelector codeActionSelector, ImmutableArray<CodeAction> codeRefactorings, IDiagnosticLocator locator)
+        public static RoslynTestKitException CodeRefactoringNotFound(ICodeActionSelector codeActionSelector, ImmutableArray<CodeAction> codeRefactorings, IDiagnosticLocator? locator)
         {
             var refactoringDescriptions = GetActionsDescription(codeRefactorings, $" Found only {codeRefactorings.Length} CodeRefactorings: ");
-            var message = $"Cannot find CodeRefactoring {codeActionSelector}  at {locator.Description()}.{refactoringDescriptions}";
+            var message = $"Cannot find CodeRefactoring {codeActionSelector}  at {locator?.Description() ?? "unknown location"}.{refactoringDescriptions}";
             return new RoslynTestKitException(message);
 		}
 
@@ -81,7 +81,7 @@ namespace RoslynTestKit
             return new RoslynTestKitException($"Found unexpected CodeRefactorings: '{refactoringDescriptions}'");
         }
 
-        private static string GetActionsDescription(ImmutableArray<CodeAction> codeFixes, string title = null)
+        private static string GetActionsDescription(ImmutableArray<CodeAction> codeFixes, string? title = null)
         {
             if (codeFixes.Length == 0)
             {
@@ -106,7 +106,7 @@ namespace RoslynTestKit
 
         public static RoslynTestKitException MoreThanOneOperationForCodeAction(CodeAction codeAction, List<CodeActionOperation> operations)
         {
-            var foundOperationDescriptions = operations.MergeWithComma(x => x.Title, title: " Found operations: ");
+            var foundOperationDescriptions = operations.MergeWithComma(x => x.Title ?? string.Empty, title: " Found operations: ");
             return new RoslynTestKitException($"There is more than one operation associated with '{codeAction.Title}'.{foundOperationDescriptions}");
         }
 

@@ -61,8 +61,8 @@ namespace RoslynTestKit
             var options = document.GetOptionsAsync(CancellationToken.None).GetAwaiter().GetResult();
            // var service = new TestCompletionService(document.Project.Solution.Workspace, LanguageName, provider);
 			var service = CompletionService.GetService(document);
-            var result = service.GetCompletionsAsync(document, span.Start, selectedTrigger, ImmutableHashSet<string>.Empty, options, CancellationToken.None).GetAwaiter().GetResult();
-            assertion(result?.Items ?? ImmutableArray<CompletionItem>.Empty);
+            var result = service!.GetCompletionsAsync(document, span.Start, selectedTrigger, ImmutableHashSet<string>.Empty, options, CancellationToken.None).GetAwaiter().GetResult();
+            assertion(new ImmutableArray<CompletionItem>().AddRange(result?.ItemsList ?? Array.Empty<CompletionItem>()));
         }
 
         protected abstract CompletionProvider CreateProvider();

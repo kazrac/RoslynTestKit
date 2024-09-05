@@ -13,13 +13,14 @@ namespace RoslynTestKit.CodeActionLocators
             _index = index;
         }
 
-        public CodeAction Find(IReadOnlyList<CodeAction> actions)
+        public CodeAction? Find(IReadOnlyList<CodeAction> actions)
         {
 
             if (_index > actions.Count - 1)
             {
                 return null;
             }
+
             return actions[_index];
         }
 

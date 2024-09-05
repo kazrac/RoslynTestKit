@@ -66,7 +66,7 @@ namespace RoslynTestKit.Utils
         }
         public static LineLocator FromDocument(Document document, int lineNumber)
         {
-            var sourceCode = document.GetSyntaxRootAsync().GetAwaiter().GetResult().ToFullString();
+            var sourceCode = document.GetSyntaxRootAsync().GetAwaiter().GetResult()!.ToFullString();
             return FromCode(sourceCode, lineNumber);
         }
     }

@@ -48,7 +48,6 @@ namespace RoslynTestKit
                 {
                     mergedDocumentBuilder.AppendLine($"{Environment.NewLine}{BaseTestFixture.FileSeparator}");
 
-                    var docSourceText = doc.GetTextAsync(CancellationToken.None).GetAwaiter().GetResult();
                     var docText = ConvertToLineEndingsAwareString(sourceText);
 
                     mergedDocumentBuilder.Append(docText);
@@ -90,11 +89,11 @@ namespace RoslynTestKit
                     ?.GetTextAsync(CancellationToken.None)
                     .GetAwaiter()
                     .GetResult()
-                    .ToString();
+                    .ToString() ?? "";
 
                 if (documentChange.State == DocumentState.Deleted)
                 {
-                    CheckDifference(actualCode, null);
+                    CheckDifference(actualCode, string.Empty);
                 }
                 else
                 {

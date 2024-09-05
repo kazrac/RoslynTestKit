@@ -16,7 +16,7 @@ namespace RoslynTestKit.Models
 
 		public static DocumentChange CreateUnchanged(
 			string code,
-			string path = null)
+			string? path = null)
 		{
 			code = code
 				.Replace("[|", "")
@@ -51,7 +51,7 @@ namespace RoslynTestKit.Models
 
 		public static DocumentChange CreateNew(
 			string code,
-			string path = null)
+			string? path = null)
 		{
 			path ??= @"TestProject\TestDocument.cs";
 
@@ -82,7 +82,7 @@ namespace RoslynTestKit.Models
 
 		public static DocumentChange CreateTargetUnchanged(
 			string markup,
-			string path = null)
+			string? path = null)
 		{
 			path ??= @"TestProject\TestDocument.cs";
 
@@ -110,7 +110,7 @@ namespace RoslynTestKit.Models
 		{
 			return CreateChanged(
 				caseDocument.Code,
-				caseDocument.FinalCode,
+				caseDocument.FinalCode ?? string.Empty,
 				caseDocument.Path
 			);
 		}
@@ -118,7 +118,7 @@ namespace RoslynTestKit.Models
 		public static DocumentChange CreateChanged(
 			string markup,
 			string finalCode,
-			string path = null)
+			string? path = null)
 		{
 			path ??= @"TestProject\TestDocument.cs";
 
@@ -151,7 +151,7 @@ namespace RoslynTestKit.Models
 
 		public static DocumentChange CreateTargetDeleted(
 			string markup,
-			string path = null)
+			string? path = null)
 		{
 			path ??= @"TestProject\TestDocument.cs";
 
@@ -187,8 +187,8 @@ namespace RoslynTestKit.Models
 
 		public static DocumentChange CreateTargetChange(
 			string markup,
-			string finalCode,
-			string path = null)
+			string? finalCode,
+			string? path = null)
 		{
 			path ??= @"TestProject\TestDocument.cs";
 
@@ -216,11 +216,11 @@ namespace RoslynTestKit.Models
 			string projectName,
 			string documentName,
 			DocumentState state,
-			string initialCode,
-			string finalCode,
+			string? initialCode,
+			string? finalCode,
 			string path,
 			IReadOnlyList<string> folders,
-			IDiagnosticLocator locator)
+			IDiagnosticLocator? locator)
 		{
 			ProjectName = projectName;
 			DocumentName = documentName;
@@ -239,7 +239,7 @@ namespace RoslynTestKit.Models
 		public string FinalCode { get; }
 		public string Path { get; }
 		public IReadOnlyList<string> Folders { get; }
-		public IDiagnosticLocator Locator { get; }
+		public IDiagnosticLocator? Locator { get; }
 		public bool IsTargetDocument => Locator != null;
 
 	}

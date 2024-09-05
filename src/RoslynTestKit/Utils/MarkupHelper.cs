@@ -16,7 +16,7 @@ namespace RoslynTestKit.Utils
              ICollection<DocumentChange> documentChanges,
              ICollection<ProjectSetup> projectSetups,
              string languageName,
-             IReadOnlyCollection<MetadataReference> references)
+             IReadOnlyCollection<MetadataReference>? references)
         {
 			var solution = SolutionFactory
 				.Create(
@@ -36,13 +36,13 @@ namespace RoslynTestKit.Utils
                 .First(x => x.FilePath == targetDocument.Path);
         }
 
-        public static Document GetDocumentFromMarkup(string markup, string languageName, IReadOnlyCollection<MetadataReference> references, string projectName = null, string documentName = null)
+        public static Document GetDocumentFromMarkup(string markup, string languageName, IReadOnlyCollection<MetadataReference> references, string? projectName = null, string? documentName = null)
         {
             var code = markup.Replace("[|", "").Replace("|]", "");
             return GetDocumentFromCode(code, languageName, references, projectName, documentName);
         }
 
-        public static Document GetDocumentFromCode(string code, string languageName, IReadOnlyCollection<MetadataReference> references, string projectName= null, string documentName= null)
+        public static Document GetDocumentFromCode(string code, string languageName, IReadOnlyCollection<MetadataReference> references, string? projectName= null, string? documentName= null)
         {
             var metadataReferences = CreateMetadataReferences(references);
 

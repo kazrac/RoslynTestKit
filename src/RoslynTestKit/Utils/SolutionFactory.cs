@@ -14,7 +14,7 @@ namespace RoslynTestKit.Utils
 			ICollection<DocumentChange> documentChanges,
 			ICollection<ProjectSetup> projectSetups,
 			string languageName,
-			IReadOnlyCollection<MetadataReference> references)
+			IReadOnlyCollection<MetadataReference>? references)
 		{
 			var workspace = new AdhocWorkspace();
 
@@ -29,7 +29,8 @@ namespace RoslynTestKit.Utils
 			options = options
 				.WithChangedOption(
 					FormattingOptions.TabSize,
-					LanguageNames.CSharp, 4
+					LanguageNames.CSharp, 
+					4
 				);
 
 			workspace
@@ -42,12 +43,19 @@ namespace RoslynTestKit.Utils
 			var solution = workspace
 				.AddSolution(SolutionInfo.Create(SolutionId.CreateNewId(), new VersionStamp()));
 
-			foreach (var projectName in projectSetups.Select(x => x.Name))
+			foreach (var projectSetup in projectSetups)
 			{
 				solution = solution
-					.AddProject(projectName, projectName, languageName)
-					.WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-					.WithDefaultNamespace(projectName)
+					.AddProject(projectSetup.Name, projectSetup.Name, languageName)
+					.WithCompilationOptions(
+						new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+							.WithNullableContextOptions(
+								projectSetup.IsNullableEnabled 
+								? NullableContextOptions.Enable
+								: NullableContextOptions.Disable
+							)
+					)
+					.WithDefaultNamespace(projectSetup.Name)
 					.AddMetadataReferences(CreateMetadataReferences(references))
 					.Solution;
 			}

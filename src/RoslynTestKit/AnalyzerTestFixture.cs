@@ -49,12 +49,12 @@ namespace RoslynTestKit
             NoDiagnostic(document, diagnosticId, codeMarkup.Locator);
         }
 
-        public void NoDiagnostic(Document document, string diagnosticId, IDiagnosticLocator locator = null)
+        public void NoDiagnostic(Document document, string diagnosticId, IDiagnosticLocator? locator = null)
         {
             NoDiagnostic(document, new []{diagnosticId}, locator);
         }
         
-        public void NoDiagnostic(Document document, string[] diagnosticIds, IDiagnosticLocator locator = null)
+        public void NoDiagnostic(Document document, string[] diagnosticIds, IDiagnosticLocator? locator = null)
         {
             var diagnostics = GetDiagnostics(document);
             if (locator != null)
@@ -109,15 +109,13 @@ namespace RoslynTestKit
         {
             var analyzers = ImmutableArray.Create(CreateAnalyzer());
             var compilation = document.Project.GetCompilationAsync(CancellationToken.None).Result;
-            var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers, options: AdditionalFiles != null? new AnalyzerOptions(AdditionalFiles.ToImmutableArray()) : null , cancellationToken: CancellationToken.None);
-            var discarded = compilation.GetDiagnostics(CancellationToken.None);
+            var compilationWithAnalyzers = compilation!.WithAnalyzers(analyzers, options: AdditionalFiles != null? new AnalyzerOptions(AdditionalFiles.ToImmutableArray()) : null);
+            var discarded = compilation!.GetDiagnostics(CancellationToken.None);
             var errorsInDocument = discarded.Where(x => x.Severity == DiagnosticSeverity.Error).ToArray();
             if (errorsInDocument.Length > 0 && ThrowsWhenInputDocumentContainsError)
             {
                 throw RoslynTestKitException.UnexpectedErrorDiagnostic(errorsInDocument);
             }
-
-            var tree = document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             var builder = ImmutableArray.CreateBuilder<Diagnostic>();
             foreach (var diagnostic in compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().GetAwaiter().GetResult())

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -19,7 +20,7 @@ namespace RoslynTestKit
 
         protected void TestCodeRefactoring(
             ICollection<DocumentChange> documentChanges,
-            ICollection<ProjectSetup> projectSetups = null,
+            ICollection<ProjectSetup>? projectSetups = null,
             int refactoringIndex = 0)
         {
             if (projectSetups == null)
@@ -68,10 +69,9 @@ namespace RoslynTestKit
 
 		protected void TestExpectedCodeActions(
 			ICollection<DocumentChange> documentChanges,
-			ICollection<ProjectSetup> projectSetups = null,
+			ICollection<ProjectSetup>? projectSetups = null,
 			params string[] expectedCodeActionTitles)
 		{
-
 			if (projectSetups == null)
 			{
 				projectSetups = new[] { new ProjectSetup("TestProject") };
@@ -138,9 +138,11 @@ namespace RoslynTestKit
 			}
 		}
 
-		private ImmutableArray<CodeAction> GetCodeRefactorings(Document document, IDiagnosticLocator locator)
+		private ImmutableArray<CodeAction> GetCodeRefactorings(Document document, IDiagnosticLocator? locator)
         {
-            var builder = ImmutableArray.CreateBuilder<CodeAction>();
+			ArgumentNullException.ThrowIfNull(locator, nameof(locator));
+
+			var builder = ImmutableArray.CreateBuilder<CodeAction>();
             var context = new CodeRefactoringContext(document, locator.GetSpan(), a => builder.Add(a), CancellationToken.None);
             var provider = CreateProvider();
             provider.ComputeRefactoringsAsync(context).Wait();

@@ -14,9 +14,9 @@ namespace RoslynTestKit
 
         protected virtual bool ThrowsWhenInputDocumentContainsError { get; } = false;
 
-        protected virtual IReadOnlyCollection<MetadataReference> References => null;
+        protected virtual IReadOnlyCollection<MetadataReference>? References => null;
 
-        protected virtual IReadOnlyCollection<AdditionalText> AdditionalFiles => null;
+        protected virtual IReadOnlyCollection<AdditionalText>? AdditionalFiles => null;
 
         protected Document CreateDocumentFromCode(string code)
         {
@@ -24,7 +24,7 @@ namespace RoslynTestKit
         }
 
         internal const string FileSeparator = "/*EOD*/";
-        private readonly static Regex FileSeparatorPattern = new Regex(Regex.Escape(FileSeparator));
+        private static readonly Regex FileSeparatorPattern = new Regex(Regex.Escape(FileSeparator));
 
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace RoslynTestKit
                 .AddMetadataReferences(frameworkReferences)
                 .AddMetadataReferences(extraReferences);
            
-            Document mainDocument = null;
+            Document? mainDocument = null;
             foreach (var doc in docs.Select((e, i) => (e, i)))
             {
                 var docContent = docs.Count > 1 ? doc.e.Trim() : doc.e;
@@ -52,7 +52,7 @@ namespace RoslynTestKit
                 project = mainDocument.Project;
             }
 
-            return mainDocument;
+            return mainDocument ?? throw new RoslynTestKitException("Unable to find a document");
         }
 
         private static CompilationOptions GetCompilationOptions(string languageName) =>
@@ -69,7 +69,7 @@ namespace RoslynTestKit
             yield return ReferenceSource.Linq;
             yield return ReferenceSource.LinqExpression;
 
-            if (ReferenceSource.Core.Display.EndsWith("mscorlib.dll") == false)
+            if (ReferenceSource.Core.Display?.EndsWith("mscorlib.dll") != true)
             {
                 foreach (var netStandardCoreLib in ReferenceSource.NetStandardBasicLibs.Value)
                 {
